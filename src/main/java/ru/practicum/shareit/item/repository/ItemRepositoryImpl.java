@@ -21,7 +21,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public List<Item> findByOwnerId(Integer ownerId) {
         return itemMap.values().stream()
-                .filter(item -> Objects.equals(item.getOwner(), ownerId))
+                .filter(item -> Objects.equals(item.getOwnerId(), ownerId))
                 .collect(Collectors.toList());
     }
 
@@ -45,9 +45,6 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item update(Item newItem) {
         Item oldItem = itemMap.get(newItem.getId());
-//        if(newItem.getOwner() != oldItem.getOwner()) {
-//            log.warn("У ");
-//        }
         if (oldItem == null) {
             log.warn("Предмет {} не найден", oldItem.getId());
             throw new NotFoundException("Предмет не найден");
