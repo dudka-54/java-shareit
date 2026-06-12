@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 /**
  * TODO Sprint add-controllers.
@@ -27,5 +26,5 @@ public class ItemDto {
     private UserDto owner;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private ItemRequest request;
+    private ItemRequestDto request;
 }

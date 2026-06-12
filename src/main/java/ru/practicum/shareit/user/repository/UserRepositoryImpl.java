@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -19,7 +18,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> getUser(Integer id) {
-        return Optional.ofNullable(users.remove(id));
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
@@ -35,7 +34,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User update(User newUser) {
+    public User patch(User newUser) {
         User oldUser = getUser(newUser.getId())
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         if (newUser.getEmail() != null) {
@@ -44,6 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (newUser.getName() != null) {
             oldUser.setName(newUser.getName());
         }
+        users.put(oldUser.getId(), oldUser);
         return oldUser;
     }
 
@@ -51,6 +51,12 @@ public class UserRepositoryImpl implements UserRepository {
     public void delete(Integer id) {
         User user = users.get(id);
         users.remove(id);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return users.values().stream()
+                .anyMatch(user -> user.getEmail().equalsIgnoreCase(email));
     }
 
     private int getNextId() {

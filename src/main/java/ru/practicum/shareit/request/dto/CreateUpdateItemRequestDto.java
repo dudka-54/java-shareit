@@ -4,7 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CreateItemRequestDto {
+public class CreateUpdateItemRequestDto {
+    private Integer id;
     @NotBlank(message = "Описание не должно быть пустым")
     private String description;
 }

@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ItemRepository {
-    public List<Item> findByOwnerId(Integer userId);
+    List<Item> findByOwnerId(Integer userId);
 
-    public Collection<Item> findAll();
+    Collection<Item> findAll();
 
-    public Optional<Item> getItem(Integer itemId);
+    Optional<Item> getItem(Integer itemId);
 
-    public Item save(Item item);
+    Item save(Item item);
 
-    public Item update(Item newItem);
+    Item update(Item newItem);
 
-    public void delete(Integer userId);
+    void delete(Integer userId);
 }

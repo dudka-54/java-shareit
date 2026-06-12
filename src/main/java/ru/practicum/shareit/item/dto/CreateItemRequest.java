@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -13,4 +12,5 @@ public class CreateItemRequest {
     private String description;
     @NotNull(message = "Поле available обязательно")
     private Boolean available;
+    private Integer requestId;
 }

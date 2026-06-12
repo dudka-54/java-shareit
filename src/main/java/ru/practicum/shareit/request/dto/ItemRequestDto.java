@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
-import lombok.NonNull;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +23,7 @@ public class ItemRequestDto {
     private String description;
 
     @NotNull(message = "запросчик не должен быть null")
-    private User requestor;
+    private UserDto requestor;
 
     @PastOrPresent(message = "Дата создания не может быть в будущем")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

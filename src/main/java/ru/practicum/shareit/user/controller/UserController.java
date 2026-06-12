@@ -45,11 +45,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @PutMapping
-    public ResponseEntity<UserDto> update(
-            @Valid @RequestBody UpdateUserRequest request) {
-        log.info("PUT-запрос на обновление пользователя с id={}", request.getId());
-        UserDto updated = userService.update(request);
+    @PatchMapping("/{userId}")
+    public ResponseEntity<UserDto> patch(@PathVariable Integer userId,
+                                         @Valid @RequestBody UpdateUserRequest request) {
+        log.info("PATCH-запрос на обновление пользователя с id={}", userId);
+        UserDto updated = userService.patch(request, userId);
         return ResponseEntity.ok(updated);
     }
 

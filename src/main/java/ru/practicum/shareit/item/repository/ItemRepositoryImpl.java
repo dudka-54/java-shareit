@@ -46,7 +46,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public Item update(Item newItem) {
         Item oldItem = itemMap.get(newItem.getId());
         if (oldItem == null) {
-            log.warn("Предмет {} не найден", oldItem.getId());
+            log.warn("Предмет {} не найден", newItem.getId());
             throw new NotFoundException("Предмет не найден");
         }
         oldItem.setName(newItem.getName());
@@ -59,7 +59,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public void delete(Integer id) {
         Item item = itemMap.get(id);
         if (item == null) {
-            log.warn("Предмет {} не найден", item.getId());
+            log.warn("Предмет {} не найден", id);
             throw new NotFoundException("Предмет не найден");
         }
         itemMap.remove(id);

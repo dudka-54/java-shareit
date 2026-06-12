@@ -7,13 +7,13 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.Collection;
 
 public interface UserService {
-    public UserDto getUserOnId(Integer id);
+    UserDto getUserOnId(Integer id);
 
-    public Collection<UserDto> findAll();
+    Collection<UserDto> findAll();
 
-    public UserDto save(CreateUserRequest user);
+    UserDto save(CreateUserRequest user);
 
-    public UserDto update(UpdateUserRequest request);
+    UserDto patch(UpdateUserRequest request, Integer userId);
 
-    public void delete(Integer id);
+    void delete(Integer id);
 }
