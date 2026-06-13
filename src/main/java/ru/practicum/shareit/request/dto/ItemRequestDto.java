@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
+import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  */
 
 @Data
+@Builder
 public class ItemRequestDto {
     @NotNull(message = "id не должен быть null")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

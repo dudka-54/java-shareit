@@ -10,27 +10,29 @@ import ru.practicum.shareit.user.model.User;
 
 public class ItemMapper {
     public static Item mapToItem(CreateItemRequest request) {
-        Item item = new Item();
-        item.setName(request.getName());
-        item.setDescription(request.getDescription());
-        item.setAvailable(request.getAvailable());
-
-        return item;
+        if (request == null) {
+            return null;
+        }
+        return Item.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .available(request.getAvailable())
+                .build();
     }
 
     public static ItemDto toItemDto(Item item, User owner, ItemRequest request) {
-        ItemDto dto = new ItemDto();
-        dto.setId(item.getId());
-        dto.setName(item.getName());
-        dto.setDescription(item.getDescription());
-        dto.setAvailable(item.isAvailable());
-        dto.setOwner(UserMapper.toUserDto(owner));
-
-        if (request != null) {
-            dto.setRequest(ItemRequestMapper.toDto(request, owner));
+        if (item == null) {
+            return null;
         }
 
-        return dto;
+        return ItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.isAvailable())
+                .owner(UserMapper.toUserDto(owner))
+                .request(request != null ? ItemRequestMapper.toDto(request, owner) : null)
+                .build();
     }
 
 }

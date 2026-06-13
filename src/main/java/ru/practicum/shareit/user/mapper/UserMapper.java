@@ -9,20 +9,22 @@ public class UserMapper {
         if (request == null) {
             return null;
         }
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        return user;
+
+        return User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .build();
     }
 
     public static UserDto toUserDto(User user) {
         if (user == null) {
             return null;
         }
-        return new UserDto(
-                user.getId(),
-                user.getName(),
-                user.getEmail()
-        );
+
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
     }
 }
