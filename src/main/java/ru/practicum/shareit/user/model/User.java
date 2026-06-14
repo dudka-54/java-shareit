@@ -1,5 +1,6 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.user.model;
 
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
-public class Item {
+@Builder
+public class User {
     private Integer id;
+
     private String name;
-    private String description;
-    private boolean available;
-    private Integer ownerId;
-    private Integer requestId;
+
+    @Email
+    private String email;
 }
