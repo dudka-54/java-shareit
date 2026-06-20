@@ -12,5 +12,5 @@ public class CreateItemRequest {
     private String description;
     @NotNull(message = "Поле available обязательно")
     private Boolean available;
-    private Integer requestId;
+    private Long requestId;
 }

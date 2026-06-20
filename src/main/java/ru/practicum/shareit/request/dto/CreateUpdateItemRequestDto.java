@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class CreateUpdateItemRequestDto {
-    private Integer id;
+    private Long id;
     @NotBlank(message = "Описание не должно быть пустым")
     private String description;
 }

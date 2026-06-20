@@ -19,6 +19,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,30 +32,30 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public ItemDto addNewItem(Integer userId, CreateItemRequest request) {
+    public ItemDto addNewItem(Long userId, CreateItemRequest request) {
         log.info("Запрос на добавление нового предмета");
         if (request == null) {
             throw new ConflictException("Email уже зарегистрирован");
         }
-        User owner = userRepository.getUser(userId)
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         ItemRequest existingRequest = null;
         if (request.getRequestId() != null) {
-            existingRequest = itemRequestRepository.getRequest(request.getRequestId())
+            existingRequest = itemRequestRepository.findById(request.getRequestId())
                     .orElseThrow(() -> new NotFoundException("Запрос с id=" + request.getRequestId() + " не найден"));
         }
         Item newItem = ItemMapper.mapToItem(request);
         validateItem(newItem);
-        newItem.setOwnerId(owner.getId());
+        newItem.setOwner(owner);
         if (request.getRequestId() != null) {
-            newItem.setRequestId(request.getRequestId());
+            newItem.setRequest(existingRequest);
         }
 
-        return ItemMapper.toItemDto(itemRepository.save(newItem), owner, existingRequest);
+        return ItemMapper.toItemDto(itemRepository.save(newItem));
     }
 
     @Override
-    public ItemDto patchItem(Integer userId, Integer itemId, CreateItemRequest patchItem) {
+    public ItemDto patchItem(Long userId, Long itemId, CreateItemRequest patchItem) {
         log.info("Запрос на обновление предмета с id={}", itemId);
 
         if (userId == null) {
@@ -67,13 +68,13 @@ public class ItemServiceImpl implements ItemService {
             throw new ForbiddenException("Редактировать вещь может только владелец");
         }
 
-        Item item = itemRepository.getItem(itemId)
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id=" + itemId + " не найден"));
-        User owner = userRepository.getUser(userId)
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         ItemRequest existingRequest = null;
-        if (item.getRequestId() != null) {
-            existingRequest = itemRequestRepository.getRequest(item.getRequestId())
+        if (item.getRequest() != null) {
+            existingRequest = itemRequestRepository.findById(item.getRequest().getId())
                     .orElse(null);
         }
 
@@ -87,33 +88,33 @@ public class ItemServiceImpl implements ItemService {
             item.setDescription(patchItem.getDescription());
         }
 
-        Item updated = itemRepository.update(item);
+        Item updated = itemRepository.save(item);
 
-        return ItemMapper.toItemDto(updated, owner, existingRequest);
+        return ItemMapper.toItemDto(updated);
     }
 
     @Override
-    public ItemDto getItem(Integer userId, Integer itemId) {
+    public ItemDto getItem(Long userId, Long itemId) {
         log.info("Запрос на получение предмета с id={}", itemId);
 
-        Item item = itemRepository.getItem(itemId)
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id " + itemId + " не найден"));
-        User user = userRepository.getUser(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
 
         ItemRequest existingRequest = null;
-        if (item.getRequestId() != null) {
-            existingRequest = itemRequestRepository.getRequest(item.getRequestId())
+        if (item.getRequest() != null) {
+            existingRequest = itemRequestRepository.findById(item.getRequest().getId())
                     .orElse(null);
         }
-        return ItemMapper.toItemDto(item, user, existingRequest);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public List<ItemDto> getItems(Integer userId) {
-        log.info("Запрос на получение предметов");
+    public List<ItemDto> getItems(Long userId) {
+        log.info("Запрос на получение предметов пользователя {}", userId);
 
-        User user = userRepository.getUser(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
         List<Item> userItems = itemRepository.findByOwnerId(userId);
@@ -122,31 +123,30 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        Map<Integer, User> ownerMap = new HashMap<>();
-        ownerMap.put(userId, user);
-
-        Set<Integer> requestIds = userItems.stream()
-                .map(Item::getRequestId)
+        Set<ItemRequest> requests = userItems.stream()
+                .map(Item::getRequest)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        Map<Integer, ItemRequest> requestMap = new HashMap<>();
-        for (Integer requestId : requestIds) {
-            itemRequestRepository.getRequest(requestId)
-                    .ifPresent(r -> requestMap.put(requestId, r));
+        Map<Long, ItemRequest> requestMap;
+        if (!requests.isEmpty()) {
+            requestMap = requests.stream()
+                    .collect(Collectors.toMap(ItemRequest::getId, Function.identity()));
+        } else {
+            requestMap = Collections.emptyMap();
         }
 
         return userItems.stream()
                 .map(item -> {
-                    User owner = ownerMap.get(item.getOwnerId());
-                    ItemRequest request = requestMap.get(item.getRequestId());
-                    return ItemMapper.toItemDto(item, owner, request);
+                    ItemRequest request = requestMap.get(item.getRequest().getId());
+                    return ItemMapper.toItemDto(item);
                 })
                 .collect(Collectors.toList());
     }
 
+
     @Override
-    public void delete(Integer userId, Integer itemId) {
+    public void delete(Long userId, Long itemId) {
         log.info("Запрос на удаление предмета с id={}", itemId);
         if (userId == null) {
             throw new ValidationException("ID пользователя не может быть null");
@@ -155,42 +155,37 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("ID предмета не может быть null");
         }
 
-        Item item = itemRepository.getItem(itemId)
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id=" + itemId + " не найден"));
-        User owner = userRepository.getUser(userId)
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         if (!(userIsOwner(userId, itemId))) {
             throw new ValidationException("Удалять вещь может только владелец");
         }
 
-        itemRepository.delete(itemId);
+        itemRepository.deleteById(itemId);
     }
 
     @Override
-    public List<ItemDto> searchItem(Integer userId, String text) {
+    public List<ItemDto> searchItem(Long userId, String text) {
         log.info("Запрос на поиск предмета с текстом - {}", text);
 
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
         }
-        User user = userRepository.getUser(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        String searchText = text.toLowerCase();
 
-        return itemRepository.findAll().stream()
-                .filter(Item::isAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(searchText)
-                        || item.getDescription().toLowerCase().contains(searchText))
+        return itemRepository.search(text).stream()
+                .filter(item -> item.getAvailable() == true)
                 .map(item -> {
-                    User owner = userRepository.getUser(item.getOwnerId())
-                            .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
+                    User owner = item.getOwner();
                     ItemRequest existingRequest = null;
-                    if (item.getRequestId() != null) {
-                        existingRequest = itemRequestRepository.getRequest(item.getRequestId())
+                    if (item.getRequest() != null) {
+                        existingRequest = itemRequestRepository.findById(item.getRequest().getId())
                                 .orElse(null);
                     }
-                    return ItemMapper.toItemDto(item, owner, existingRequest);
+                    return ItemMapper.toItemDto(item);
                 })
                 .collect(Collectors.toList());
     }
@@ -210,14 +205,14 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private boolean userIsOwner(Integer userId, Integer itemId) {
+    private boolean userIsOwner(Long userId, Long itemId) {
         log.info("Использован метод является ли пользователь владельцем");
-        Item item = itemRepository.getItem(itemId)
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> {
                     log.warn("Предмет с id - {} не найден", itemId);
                     return new NotFoundException("Предмет не найден с id - " + itemId);
                 });
-        return Objects.equals(item.getOwnerId(), userId);
+        return Objects.equals(item.getOwner(), userId);
     }
 
 }

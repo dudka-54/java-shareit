@@ -1,23 +1,40 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
 /**
  * TODO Sprint add-controllers.
  */
 
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
+@Entity
+@Table(name = "items")
 public class Item {
-    private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
     private String description;
-    private boolean available;
-    private Integer ownerId;
-    private Integer requestId;
+
+    @Column(nullable = false)
+    private Boolean available;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @OneToOne
+    @JoinColumn(name = "request_id")
+    private ItemRequest request;
 }

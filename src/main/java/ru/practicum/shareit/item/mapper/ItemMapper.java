@@ -20,7 +20,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDto toItemDto(Item item, User owner, ItemRequest request) {
+    public static ItemDto toItemDto(Item item) {
         if (item == null) {
             return null;
         }
@@ -29,9 +29,9 @@ public class ItemMapper {
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
-                .available(item.isAvailable())
-                .owner(UserMapper.toUserDto(owner))
-                .request(request != null ? ItemRequestMapper.toDto(request, owner) : null)
+                .available(item.getAvailable())
+                .owner(UserMapper.toUserDto(item.getOwner()))
+                .request(ItemRequestMapper.toDto(item.getRequest()))
                 .build();
     }
 

@@ -6,13 +6,13 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import java.util.Collection;
 
 public interface ItemRequestService {
-    ItemRequestDto getRequestOnId(Integer id, Integer ownerId);
+    ItemRequestDto getRequestOnId(Long id, Long ownerId);
 
-    Collection<ItemRequestDto> findAll(Integer ownerId);
+    Collection<ItemRequestDto> findAll(Long ownerId);
 
-    ItemRequestDto save(CreateUpdateItemRequestDto newRequest, Integer ownerId);
+    ItemRequestDto save(CreateUpdateItemRequestDto newRequest, Long ownerId);
 
-    ItemRequestDto update(CreateUpdateItemRequestDto request, Integer ownerId);
+    ItemRequestDto update(CreateUpdateItemRequestDto request, Long ownerId);
 
-    void delete(Integer id, Integer ownerId);
+    void delete(Long id, Long ownerId);
 }

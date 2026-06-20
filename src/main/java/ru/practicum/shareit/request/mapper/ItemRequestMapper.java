@@ -6,14 +6,14 @@ import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 
 public class ItemRequestMapper {
-    public static ItemRequestDto toDto(ItemRequest request, User requestor) {
+    public static ItemRequestDto toDto(ItemRequest request) {
         if (request == null) {
             return null;
         }
         return ItemRequestDto.builder()
                 .id(request.getId())
                 .description(request.getDescription())
-                .requestor(UserMapper.toUserDto(requestor))
+                .requestor(UserMapper.toUserDto(request.getRequestor()))
                 .created(request.getCreated())
                 .build();
     }
