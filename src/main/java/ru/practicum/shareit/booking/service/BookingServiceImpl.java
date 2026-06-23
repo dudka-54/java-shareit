@@ -21,11 +21,11 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-@Service
 @Slf4j
 @AllArgsConstructor
-@Repository
+@Service
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
@@ -58,16 +58,10 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto approveOrReject(Long ownerId, Long bookingId, String status) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Сущность бронирования не найдена"));
-        BookingStatus bookingStatus;
         if (userIsOwner(ownerId, booking.getItem().getId())) {
             throw new ConflictException("Только пользователь может задавать статус бронирования");
         }
-        try {
-            bookingStatus = BookingStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            log.warn("Не удалось привести String к enum");
-            throw new ValidationException("Неизвестный статус: " + status);
-        }
+        BookingStatus bookingStatus = mapStringToStatus(status);
         if (bookingStatus != BookingStatus.APPROVED && bookingStatus != BookingStatus.REJECTED) {
             throw new ConflictException("Используя данный метод enum должен быть APPROWED или REJECTED");
         }
@@ -84,14 +78,69 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Сущность бронирования не найдена")));
     }
 
-    @Override
-    public List<BookingDto> getBookingsInOwnerAndState(Long ownerId, String state) {
-        return List.of();
-    }
 
     @Override
     public List<BookingDto> getBookingsByBookerAndState(Long bookerId, String state) {
-        return List.of();
+        if (bookerId == null) {
+            throw new NotFoundException("Поле ownerId не может быть null");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (state.equalsIgnoreCase("CURRENT")) {
+            return bookingRepository.findCurrentByBooker(bookerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else if (state.equalsIgnoreCase("PAST")) {
+            return bookingRepository.findPastByBooker(bookerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else if (state.equalsIgnoreCase("FUTURE")) {
+            return bookingRepository.findFutureByBooker(bookerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else {
+            BookingStatus bookingStatus = mapStringToStatus(state);
+            if (bookingStatus == null) { //ALL
+                return bookingRepository.findByBookerIdOrderByStartDesc(bookerId).stream()
+                        .map(BookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+            }
+            return bookingRepository.findByBookerIdOrderByStartDesc(bookerId).stream()
+                    .filter(booking -> booking.getStatus() == bookingStatus)
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public List<BookingDto> getBookingsInOwnerAndState(Long ownerId, String state) {
+        if (ownerId == null) {
+            throw new NotFoundException("Поле ownerId не может быть null");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (state.equalsIgnoreCase("CURRENT")) {
+            return bookingRepository.findCurrentByOwner(ownerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else if (state.equalsIgnoreCase("PAST")) {
+            return bookingRepository.findPastByOwner(ownerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else if (state.equalsIgnoreCase("FUTURE")) {
+            return bookingRepository.findFutureByOwner(ownerId, now).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else {
+            BookingStatus bookingStatus = mapStringToStatus(state);
+            if (bookingStatus == null) { //ALL
+                return bookingRepository.findByItem_OwnerIdOrderByStartDesc(ownerId).stream()
+                        .map(BookingMapper::toBookingDto)
+                        .collect(Collectors.toList());
+            }
+            return bookingRepository.findByItem_OwnerIdOrderByStartDesc(ownerId).stream()
+                    .filter(booking -> booking.getStatus() == bookingStatus)
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     private void validateBooking(Booking booking) {
@@ -125,6 +174,19 @@ public class BookingServiceImpl implements BookingService {
         } catch (ValidationException | ConflictException e) {
             log.warn("Ошибка валидации: {}", String.valueOf(e));
             throw e;
+        }
+    }
+
+    private BookingStatus mapStringToStatus(String state) {
+        BookingStatus bookingStatus;
+        if (state == null || state.equalsIgnoreCase("ALL")) {
+            return null;
+        }
+        try {
+            return bookingStatus = BookingStatus.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.warn("Не удалось привести String к enum");
+            throw new ValidationException("Неизвестный статус: " + state);
         }
     }
 

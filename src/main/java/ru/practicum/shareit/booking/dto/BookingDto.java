@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 public class BookingDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer id;
+    private Long id;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime start;

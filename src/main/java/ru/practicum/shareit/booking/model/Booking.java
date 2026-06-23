@@ -21,12 +21,12 @@ import java.time.LocalDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "start_date")
     private LocalDateTime start;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "end_date")
     private LocalDateTime end;
 
     @ManyToOne
