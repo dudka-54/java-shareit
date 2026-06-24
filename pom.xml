@@ -115,7 +115,7 @@
                 <version>${spotbugs.version}</version>
                 <configuration>
                     <effort>Max</effort>
-                    <threshold>High</threshold>
+                    <threshold>Low</threshold>
                 </configuration>
                 <executions>
                     <execution>
