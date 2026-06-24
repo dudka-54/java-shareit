@@ -26,7 +26,7 @@ public class ItemRequest {
     private String description;
 
     @OneToOne
-    @JoinColumn(name = "requestor_id",nullable = false)
+    @JoinColumn(name = "requestor_id", nullable = false)
     private User requestor;
 
     @Column(nullable = false)

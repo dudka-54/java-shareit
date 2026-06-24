@@ -3,7 +3,6 @@ package ru.practicum.shareit.request.mapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 
 public class ItemRequestMapper {
     public static ItemRequestDto toDto(ItemRequest request) {
