@@ -89,7 +89,6 @@
                 </configuration>
             </plugin>
 
-            <!-- ✅ Checkstyle Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -108,12 +107,6 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
