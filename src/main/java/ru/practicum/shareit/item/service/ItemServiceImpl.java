@@ -63,37 +63,27 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto patchItem(Long userId, Long itemId, CreateItemRequest patchItem) {
-        log.info("Запрос на обновление предмета с id={}", itemId);
-
-        if (userId == null) {
-            throw new ValidationException("ID пользователя не может быть null");
-        }
-        if (itemId == null) {
-            throw new ValidationException("ID предмета не может быть null");
-        }
-        //Убрал проверку userIsOwner так как перестали проходить postman test
+        log.info("Запрос на обновление предмета с id={} от пользователя {}", itemId, userId);
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id=" + itemId + " не найден"));
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
-        ItemRequest existingRequest = null;
-        if (item.getRequest() != null) {
-            existingRequest = itemRequestRepository.findById(item.getRequest().getId())
-                    .orElse(null);
+
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
 
-        if (patchItem.getName() != null) {
+        if (patchItem.getName() != null && !patchItem.getName().isBlank()) {
             item.setName(patchItem.getName());
+        }
+        if (patchItem.getDescription() != null && !patchItem.getDescription().isBlank()) {
+            item.setDescription(patchItem.getDescription());
         }
         if (patchItem.getAvailable() != null) {
             item.setAvailable(patchItem.getAvailable());
         }
-        if (patchItem.getDescription() != null) {
-            item.setDescription(patchItem.getDescription());
-        }
 
         Item updated = itemRepository.save(item);
+        log.info("Предмет с id={} обновлен", itemId);
 
         return ItemMapper.toItemDto(updated);
     }
@@ -102,8 +92,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public ItemBookingCommentDto getItem(Long userId, Long itemId) {
         log.info("Запрос на получение предмета с id={}", itemId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        if (!(userRepository.existsById(userId))) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
         LocalDateTime now = LocalDateTime.now();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с id " + itemId + " не найден"));
@@ -153,10 +144,12 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("ID предмета не может быть null");
         }
 
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмет с id=" + itemId + " не найден"));
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+        if (!(itemRepository.existsById(itemId))) {
+            throw new NotFoundException("Предмет с id=" + itemId + " не найден");
+        }
+        if (!(userRepository.existsById(userId))) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
         if (!(userIsOwner(userId, itemId))) {
             throw new ValidationException("Удалять вещь может только владелец");
         }
@@ -171,20 +164,14 @@ public class ItemServiceImpl implements ItemService {
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
 
         return itemRepository.search(text).stream()
-                .filter(item -> item.getAvailable() == true)
-                .map(item -> {
-                    User owner = item.getOwner();
-                    ItemRequest existingRequest = null;
-                    if (item.getRequest() != null) {
-                        existingRequest = itemRequestRepository.findById(item.getRequest().getId())
-                                .orElse(null);
-                    }
-                    return ItemMapper.toItemDto(item);
-                })
+                .filter(Item::getAvailable)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 

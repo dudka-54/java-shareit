@@ -9,7 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemBookingCommentDto {

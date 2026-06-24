@@ -9,7 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingInfoDto;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class ItemBookingDto {   // Без комментариев
     private Long id;
     private String name;

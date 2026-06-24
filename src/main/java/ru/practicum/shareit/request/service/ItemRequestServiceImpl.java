@@ -29,9 +29,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public ItemRequestDto getRequestOnId(Long id, Long ownerId) {
         log.info("Запрос на получение запроса id={} от пользователя id={}", id, ownerId);
 
-        User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
-
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
         ItemRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + id + " не найден"));
 
@@ -46,9 +46,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public Collection<ItemRequestDto> findAll(Long ownerId) {
         log.info("Запрос на получение всех запросов пользователя id={}", ownerId);
 
-        User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
-
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
         Collection<ItemRequest> allRequests = requestRepository.findAll();
 
         List<ItemRequestDto> userRequests = allRequests.stream()
@@ -90,8 +90,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new ValidationException("ID запроса не может быть null");
         }
 
-        User user = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
 
         ItemRequest existingRequest = requestRepository.findById(requestDto.getId())
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + requestDto.getId() + " не найден"));

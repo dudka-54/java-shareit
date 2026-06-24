@@ -15,7 +15,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class ItemDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
