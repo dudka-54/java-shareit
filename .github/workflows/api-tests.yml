@@ -33,4 +33,4 @@ jobs:
       - name: Run Postman tests
         run: |
           npm install -g newman
-          newman run ./tests/postman/sprint.json --delay-request 500 --color on
+          newman run ./test/postman/sprint.json --delay-request 500 --color on
