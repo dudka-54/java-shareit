@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.*;
-import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
@@ -65,9 +64,9 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<CommentDto> addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                 @RequestParam Long id,
+                                                 @PathVariable Long itemId,
                                                  @RequestBody CommentRequest request) {
-        CommentDto commentDto = itemService.addComment(userId, id, request);
+        CommentDto commentDto = itemService.addComment(userId, itemId, request);
         return ResponseEntity.ok(commentDto);
     }
 }

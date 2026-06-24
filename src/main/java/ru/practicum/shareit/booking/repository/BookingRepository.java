@@ -84,4 +84,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long itemId,
             LocalDateTime endBefore,
             BookingStatus status);
+
 }
+

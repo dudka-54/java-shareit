@@ -7,9 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -31,8 +29,10 @@ public class BookingDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime end;
 
-    private ItemDto item;
-    private UserDto booker;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BookingStatus status;
+
+    private UserDto booker;
+    private ItemDto item;
 
 }
