@@ -32,7 +32,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto addNewBooking(Long userId, CreateBooking newBooking) {
+        log.info("Запрос на создание нового бронирования");
         if (userId == null) {
+            log.warn("Поле userId не может быть null");
             throw new NotFoundException("Поле userId не может быть null");
         }
         User booker = userRepository.findById(userId)
@@ -41,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Предмет не найден"));
         Booking booking = BookingMapper.mapToBooking(newBooking);
         if (userIsOwner(userId, item.getId())) {
+            log.warn("Владелец не может забронировать свою вещь");
             throw new ConflictException("Владелец не может забронировать свою вещь");
         }
         booking.setBooker(booker);
@@ -52,19 +55,23 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto approveOrReject(Long ownerId, Long bookingId, String status) {
+        log.info("Запрос на подтверждение или отказ бронирования ownerId - {} bookingId - {} status {}", ownerId, bookingId, status);
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Сущность бронирования не найдена"));
 
         if (!userIsOwner(ownerId, booking.getItem().getId())) {
+            log.warn("Только владелец может менять статус бронирования");
             throw new ForbiddenException("Только владелец может менять статус бронирования");
         }
 
         BookingStatus bookingStatus = mapStringToStatus(status);
         if (bookingStatus != BookingStatus.APPROVED && bookingStatus != BookingStatus.REJECTED) {
+            log.warn("Используя данный метод enum должен быть APPROWED или REJECTED");
             throw new ConflictException("Используя данный метод enum должен быть APPROWED или REJECTED");
         }
 
         if (booking.getStatus() == BookingStatus.APPROVED || booking.getStatus() == BookingStatus.REJECTED) {
+            log.warn("Статус бронирования уже установлен");
             throw new ConflictException("Статус бронирования уже установлен");
         }
 
@@ -74,6 +81,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getBooking(Long bookingId) {
+        log.info("Запрос на получение бронирования по bookingId - {}", bookingId);
         if (bookingId == null) {
             throw new NotFoundException("Поле bookingId не может быть null");
         }
@@ -84,6 +92,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsByBookerAndState(Long bookerId, String state) {
+        log.info("Получение списка всех бронирований текущего пользователя");
         if (bookerId == null) {
             throw new NotFoundException("Поле ownerId не может быть null");
         }
@@ -102,7 +111,7 @@ public class BookingServiceImpl implements BookingService {
                     .collect(Collectors.toList());
         } else {
             BookingStatus bookingStatus = mapStringToStatus(state);
-            if (bookingStatus == null) { //ALL
+            if (bookingStatus == null) {
                 return bookingRepository.findByBookerIdOrderByStartDesc(bookerId).stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
@@ -116,6 +125,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsInOwnerAndState(Long ownerId, String state) {
+        log.info("Получение списка бронирований для всех вещей текущего пользователя");
         if (ownerId == null) {
             throw new NotFoundException("Поле ownerId не может быть null");
         }
@@ -182,6 +192,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BookingStatus mapStringToStatus(String state) {
+        log.info("Использован метод преобразования объекта строки - {} в Enum ", state);
         BookingStatus bookingStatus;
         if (state == null || state.equalsIgnoreCase("ALL")) {
             return null;
@@ -195,6 +206,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private boolean userIsOwner(Long userId, Long itemId) {
+        log.info("Использован запрос является ли пользователь владельцем");
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет не найден с id - " + itemId));
         return item.getOwner().getId().equals(userId);
