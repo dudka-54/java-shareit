@@ -15,10 +15,10 @@ import ru.practicum.shareit.user.dto.UserDto;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class ItemDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer id;
+    private Long id;
 
     private String name;
     private String description;

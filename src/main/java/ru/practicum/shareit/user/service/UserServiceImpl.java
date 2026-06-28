@@ -25,9 +25,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto getUserOnId(Integer id) {
+    public UserDto getUserOnId(Long id) {
         log.info("Запрос на получение конкретного пользователя по id - {}", id);
-        User user = userRepository.getUser(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         return UserMapper.toUserDto(user);
     }
@@ -52,14 +52,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto patch(UpdateUserRequest request, Integer userId) {
+    public UserDto patch(UpdateUserRequest request, Long userId) {
         log.info("Запрос на обновление пользователя с id={}", userId);
 
         if (userId == null) {
             throw new ValidationException("ID пользователя не может быть null");
         }
 
-        User existingUser = userRepository.getUser(userId)
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         if (request.getName() != null) {
             existingUser.setName(request.getName());
@@ -71,18 +71,18 @@ public class UserServiceImpl implements UserService {
             existingUser.setEmail(request.getEmail());
         }
 
-        User updatedUser = userRepository.patch(existingUser);
+        User updatedUser = userRepository.save(existingUser);
 
         return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Long id) {
         if (id == null) {
             log.warn("Пользователь {} не найден", id);
             throw new NotFoundException("Пользователь не найден по id - " + id);
         }
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     private void validationUser(User user) {

@@ -26,35 +26,34 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final UserRepository userRepository;
 
     @Override
-    public ItemRequestDto getRequestOnId(Integer id, Integer ownerId) {
+    public ItemRequestDto getRequestOnId(Long id, Long ownerId) {
         log.info("Запрос на получение запроса id={} от пользователя id={}", id, ownerId);
 
-        User user = userRepository.getUser(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
-
-        // 2. Получаем запрос
-        ItemRequest request = requestRepository.getRequest(id)
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
+        ItemRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + id + " не найден"));
 
         if (!request.getRequestor().equals(ownerId)) {
             throw new ForbiddenException("Просматривать запрос может только его создатель");
         }
 
-        return ItemRequestMapper.toDto(request, user);
+        return ItemRequestMapper.toDto(request);
     }
 
     @Override
-    public Collection<ItemRequestDto> findAll(Integer ownerId) {
+    public Collection<ItemRequestDto> findAll(Long ownerId) {
         log.info("Запрос на получение всех запросов пользователя id={}", ownerId);
 
-        User user = userRepository.getUser(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
-
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
         Collection<ItemRequest> allRequests = requestRepository.findAll();
 
         List<ItemRequestDto> userRequests = allRequests.stream()
                 .filter(request -> request.getRequestor().equals(ownerId))
-                .map(request -> ItemRequestMapper.toDto(request, user))
+                .map(ItemRequestMapper::toDto)
                 .collect(Collectors.toList());
 
         log.info("Найдено {} запросов для пользователя id={}", userRequests.size(), ownerId);
@@ -62,10 +61,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestDto save(CreateUpdateItemRequestDto newRequest, Integer ownerId) {
+    public ItemRequestDto save(CreateUpdateItemRequestDto newRequest, Long ownerId) {
         log.info("Создание нового запроса от пользователя id={}", ownerId);
 
-        User user = userRepository.getUser(ownerId)
+        User user = userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
 
         if (newRequest.getDescription() == null || newRequest.getDescription().isBlank()) {
@@ -74,27 +73,28 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         ItemRequest request = new ItemRequest();
         request.setDescription(newRequest.getDescription());
-        request.setRequestor(user.getId());
+        request.setRequestor(user);
 
         ItemRequest saved = requestRepository.save(request);
 
         log.info("Создан запрос id={} для пользователя id={}", saved.getId(), ownerId);
 
-        return ItemRequestMapper.toDto(saved, user);
+        return ItemRequestMapper.toDto(saved);
     }
 
     @Override
-    public ItemRequestDto update(CreateUpdateItemRequestDto requestDto, Integer ownerId) {
+    public ItemRequestDto update(CreateUpdateItemRequestDto requestDto, Long ownerId) {
         log.info("Обновление запроса от пользователя id={}", ownerId);
 
         if (requestDto.getId() == null) {
             throw new ValidationException("ID запроса не может быть null");
         }
 
-        User user = userRepository.getUser(ownerId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
+        if (!(userRepository.existsById(ownerId))) {
+            throw new NotFoundException("Пользователь с id " + ownerId + " не найден");
+        }
 
-        ItemRequest existingRequest = requestRepository.getRequest(requestDto.getId())
+        ItemRequest existingRequest = requestRepository.findById(requestDto.getId())
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + requestDto.getId() + " не найден"));
 
         if (!existingRequest.getRequestor().equals(ownerId)) {
@@ -105,28 +105,28 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             existingRequest.setDescription(requestDto.getDescription());
         }
 
-        ItemRequest updated = requestRepository.update(existingRequest);
+        ItemRequest updated = requestRepository.save(existingRequest);
 
         log.info("Обновлён запрос id={}", updated.getId());
 
-        return ItemRequestMapper.toDto(updated, user);
+        return ItemRequestMapper.toDto(updated);
     }
 
     @Override
-    public void delete(Integer id, Integer ownerId) {
+    public void delete(Long id, Long ownerId) {
         log.info("Удаление запроса id={} пользователем id={}", id, ownerId);
 
-        userRepository.getUser(ownerId)
+        userRepository.findById(ownerId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + ownerId + " не найден"));
 
-        ItemRequest request = requestRepository.getRequest(id)
+        ItemRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Запрос с id " + id + " не найден"));
 
         if (!request.getRequestor().equals(ownerId)) {
             throw new ForbiddenException("Удалять запрос может только его создатель");
         }
 
-        requestRepository.delete(id);
+        requestRepository.deleteById(id);
 
         log.info("Удалён запрос id={}", id);
     }

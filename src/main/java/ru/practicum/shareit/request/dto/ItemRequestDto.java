@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class ItemRequestDto {
     @NotNull(message = "id не должен быть null")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Описание не должно быть пустым")
     private String description;

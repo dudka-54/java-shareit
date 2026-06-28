@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserDto {
     @NotBlank
-    private Integer id;
+    private Long id;
 
     @NotBlank
     private String name;
