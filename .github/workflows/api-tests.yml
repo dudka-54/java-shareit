@@ -5,32 +5,4 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Run application with test profile
-        run: |
-          nohup mvn spring-boot:run -Dspring-boot.run.profiles=test &
-          echo "⏳ Ожидание запуска сервера..."
-          for i in {1..40}; do
-            if curl --output /dev/null --silent --head --fail http://localhost:8080/; then
-              echo "✅ Сервер запущен!"
-              break
-            fi
-            echo "Попытка $i/40..."
-            sleep 3
-          done
-
-      - name: Run Postman tests
-        run: |
-          npm install -g newman
-          newman run ./src/test/postman/sprint.json --delay-request 500 --color on
+    uses: yandex-praktikum/java-shareit/.github/workflows/api-tests.yml@ci

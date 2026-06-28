@@ -42,5 +42,5 @@ public class Item {
     private ItemRequest request;
 
     @OneToMany(mappedBy = "item")
-    private List<Comment> comments = new ArrayList<>();
+    private final List<Comment> comments = new ArrayList<>();
 }
