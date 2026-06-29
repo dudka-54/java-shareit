@@ -39,6 +39,18 @@ public class ItemMapper {
                 .build();
     }
 
+    public static ItemShortDto toItemShortDto(Item item) {
+        if (item == null) {
+            return null;
+        }
+
+        return ItemShortDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .ownerId(item.getOwner().getId())
+                .build();
+    }
+
     public static ItemBookingDto toItemBookingDto(Item item,
                                                   Booking lastBooking,
                                                   Booking nextBooking) {

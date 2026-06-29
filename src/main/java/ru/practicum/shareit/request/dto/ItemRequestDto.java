@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * TODO Sprint add-item-requests.
@@ -24,10 +26,10 @@ public class ItemRequestDto {
     @NotBlank(message = "Описание не должно быть пустым")
     private String description;
 
-    @NotNull(message = "запросчик не должен быть null")
-    private UserDto requestor;
-
     @PastOrPresent(message = "Дата создания не может быть в будущем")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime created;
+
+    private List<ItemShortDto> items;
+
 }
