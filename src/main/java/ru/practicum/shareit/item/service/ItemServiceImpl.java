@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
@@ -40,25 +39,32 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addNewItem(Long userId, CreateItemRequest request) {
-        log.info("Запрос на добавление нового предмета");
+        log.info("Запрос на добавление нового предмета от пользователя {}", userId);
+
         if (request == null) {
-            throw new ConflictException("Email уже зарегистрирован");
+            throw new ValidationException("Запрос не может быть null");
         }
+
         User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+
         ItemRequest existingRequest = null;
         if (request.getRequestId() != null) {
             existingRequest = itemRequestRepository.findById(request.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Запрос с id=" + request.getRequestId() + " не найден"));
+                    .orElseThrow(() ->
+                            new NotFoundException("Запрос с id " + request.getRequestId() + " не найден"));
+
         }
+
         Item newItem = ItemMapper.mapToItem(request);
         validateItem(newItem);
         newItem.setOwner(owner);
-        if (request.getRequestId() != null) {
-            newItem.setRequest(existingRequest);
-        }
+        newItem.setRequest(existingRequest);
 
-        return ItemMapper.toItemDto(itemRepository.save(newItem));
+        Item saved = itemRepository.save(newItem);
+        log.info("Предмет добавлен с id {}", saved.getId());
+
+        return ItemMapper.toItemDto(saved);
     }
 
     @Override

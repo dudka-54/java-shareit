@@ -6,6 +6,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ItemRequestMapper {
     public static ItemRequestDto toDto(ItemRequest request) {
@@ -16,9 +17,11 @@ public class ItemRequestMapper {
                 .id(request.getId())
                 .description(request.getDescription())
                 .created(request.getCreated())
-                .items(request.getItems().stream()
+                .items(Optional.ofNullable(request.getItems())
+                        .orElse(Collections.emptyList())
+                        .stream()
                         .map(ItemMapper::toItemShortDto)
-                        .toList())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
